@@ -347,3 +347,5 @@ const deleteFile = async (req, res, next) => {
     res.status(500).send({ message: `Unable to delete file: ${err.message}` });
   }
 };
+
+//깃헙
