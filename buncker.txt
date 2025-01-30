@@ -1,0 +1,349 @@
+const { body, validationResult } = require('express-validator');
+
+app.post('/items', [
+  body('items').isArray().withMessage('Items must be an array'),
+  body('items.*.name').notEmpty().withMessage('Name is required for all items'),
+  body('items.*.quantity').isInt({ min: 1 }).withMessage('Quantity must be a positive integer')
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  // 배열 데이터가 유효한 경우에 대한 로직
+  res.status(200).json({ message: 'Items validated successfully' });
+});
+
+
+// aggregate 최대필드값 찾기 예시
+return CastCall.aggregate([
+        { $match: { callsheet: callsheetId } },
+        {
+          $group: {
+            _id: null,
+            maxOrder: { $max: "$order" },
+          },
+        },
+      ]);
+
+
+
+
+{
+    "staffLists": [{
+  "_id": "65b470da7fc267c1eab6e4db",
+  "order": 2,
+  "dept": "0",
+  "role": "0",
+  "name": "mario",
+  "project": "65a2706cb4b03a72fbe7df57"
+}]
+}
+
+const aCode = req.aCode;
+    // 권한검사
+    if (aCode !== 1 && aCode !== 2) {
+      const error = new Error("Not authorized");
+      error.statusCode = 403;
+      next(err);
+    }
+
+// response 할 배열 order로 재정렬
+insertedCheckLists.sort((a,b) => {
+      return a.order - b.order
+    });
+
+
+
+// 배열 변환 로직이 있는 updateStaffCall
+exports.updateStaffCall = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const error = new Error("Validation failed, data has gone wrong");
+      error.statusCode = 422;
+      throw error;
+    }
+
+    const callsheetId = req.params.callsheetId;
+
+    const newStaffCalls = req.body.staffCalls;
+
+    const aCode = req.aCode;
+    // 권한검사
+    if (aCode !== 1 && aCode !== 2) {
+      const error = new Error("Not authorized");
+      error.statusCode = 403;
+      next(err);
+    }
+
+    const newStaffCallIds = newStaffCalls.map((item) => item._id);
+
+    const staffCalls = await StaffCall.find({
+      callsheet: callsheetId,
+      _id: { $in: newStaffCallIds },
+    });
+
+    if (!Array.isArray(staffCalls) && staffCalls.length === 0) {
+      const error = new Error("no staffCalls to insert");
+      error.statusCode = 403;
+      throw error;
+    }
+
+    for (const newStaff of newStaffCalls) {
+      const oldStaff = staffCalls.find(
+        (oldStaff) => oldStaff._id.toString() === newStaff._id.toString()
+      );
+      const oldOrder = oldStaff.order;
+      const newOrder = newStaff.order;
+      const newDept = newStaff.dept;
+      const newCall = newStaff.call;
+
+      console.log("This is oldOrder : ", oldOrder);
+      console.log("This is newOrder : ", newOrder);
+
+      let update;
+      // Update order
+      if (newOrder !== null && newOrder > oldOrder) {
+        console.log("겍게게게게게게겍");
+        update = await StaffCall.updateMany(
+          {
+            callsheet: callsheetId,
+            dept: newDept,
+            order: { $gt: oldOrder, $lte: newOrder },
+          },
+          { $inc: { order: -1 } }
+        );
+        console.log("This is update :", update);
+      } else if (newOrder < oldOrder) {
+        console.log("겍게게게게게게겍2");
+        update = await StaffCall.updateMany(
+          {
+            callsheet: callsheetId,
+            dept: newDept,
+            order: { $gte: newOrder, $lt: oldOrder },
+          },
+          { $inc: { order: 1 } }
+        );
+
+        console.log("This is update :", update);
+      }
+
+      // Update staffCall
+      const updatedStaffCall = await StaffCall.findByIdAndUpdate(
+        oldStaff._id,
+        { $set: { order: newOrder, dept: newDept, call: newCall } },
+        {
+          new: true,
+        }
+      );
+    }
+
+    const updatedStaffCalls = await StaffCall.find({
+      callsheet: callsheetId,
+      _id: { $in: newStaffCallIds },
+    });
+
+    res.status(201).json({
+      message: "staffCall updated",
+      staffCall: updatedStaffCalls,
+      authority: aCode,
+    });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
+  }
+};    
+
+
+
+
+/**
+ * TODO(developer): Uncomment the following lines before running the sample.
+ */
+// The ID of your GCS bucket
+const bucketName = "helloworld-app-410701.appspot.com";
+
+// The contents that you want to upload
+const contents = "";
+
+// The new ID for your GCS file
+const destFileName = "testFile";
+
+// Imports the Google Cloud Node.js client library
+const { Storage } = require("@google-cloud/storage");
+
+// Creates a client
+const storage = new Storage();
+
+async function uploadFromMemory() {
+  await storage.bucket(bucketName).file(destFileName).save(contents);
+
+  console.log(
+    `${destFileName} with contents ${contents} uploaded to ${bucketName}.`
+  );
+}
+
+uploadFromMemory().catch(console.error);
+
+
+/**
+ * TODO(developer): Uncomment the following lines before running the sample.
+ */
+// The ID of your GCS bucket
+const bucketName = "helloworld-app-410701.appspot.com";
+
+// The local directory to upload
+const directoryName = "C:/Users/USER/Desktop/testFile/";
+
+// Imports the Google Cloud client library
+const { Storage, TransferManager } = require("@google-cloud/storage");
+
+// Creates a client
+const storage = new Storage();
+
+// Creates a transfer manager client
+const transferManager = new TransferManager(storage.bucket(bucketName));
+
+async function uploadDirectoryWithTransferManager() {
+  // Uploads the directory
+  await transferManager.uploadManyFiles(directoryName);
+
+  console.log(`${directoryName} uploaded to ${bucketName}.`);
+}
+
+uploadDirectoryWithTransferManager().catch(console.error);
+
+
+
+
+
+
+
+
+
+const ObjectId = require('mongoose').Types.ObjectId;
+
+const member = {_id: new ObjectId(), user: user._id, pRole: pRole, authority: authority};
+
+await Project.findByIdAndUpdate(projectId, {$push:{members: member}});
+
+
+
+
+/////////////// gcs file crud
+const processFile = require("../../middleware/uploadFile");
+const { format } = require("util");
+const { v4: uuidv4 } = require("uuid");
+
+const { Storage } = require("@google-cloud/storage");
+const storage = new Storage();
+const bucket = storage.bucket("helloworld-app-410701.appspot.com");
+
+const Storyboard = require("../../modules/project/storyboard");
+
+const uploadFile = async (req, res, next) => {
+  try {
+    await processFile(req, res);
+
+    if (!req.file) {
+      return res.status(400).send({ message: "Please upload a file!" });
+    }
+
+    const folderName = "storyboardImage/";
+
+    const fileName = folderName + uuidv4() + "_" + req.file.originalname;
+
+    // Create a new blob in the bucket and upload the file data.
+    const blob = bucket.file(fileName);
+    const blobStream = blob.createWriteStream({
+      resumable: false,
+    });
+
+    blobStream.on("error", (err) => {
+      res.status(500).send({ message: err.message });
+    });
+
+    blobStream.on("finish", async (data) => {
+      // Create URL for directly file access via HTTP.
+      const publicUrl = format(
+        `https://storage.googleapis.com/${bucket.name}/${blob.name}`
+      );
+
+      try {
+        // Make the file public
+        await bucket.file(fileName).makePublic();
+      } catch {
+        return res.status(500).send({
+          message: `Uploaded the file successfully: ${fileName}, but public access is denied!`,
+          url: publicUrl,
+        });
+      }
+
+      res.status(200).send({
+        message: "Uploaded the file successfully: " + fileName,
+        url: publicUrl,
+      });
+    });
+
+    blobStream.end(req.file.buffer);
+  } catch (err) {
+    res.status(500).send({
+      message: `Could not upload the file: ${fileName}. ${err}`,
+    });
+  }
+};
+
+const getFiles = async (req, res, next) => {
+  try {
+    const [files] = await bucket.getFiles({ prefix: "storyboardImage/" });
+    let fileInfos = [];
+
+    files.forEach((file) => {
+      const fileName = file.name.split("/").pop();
+      fileInfos.push({
+        name: fileName,
+        url: file.metadata.mediaLink,
+      });
+    });
+
+    res.status(200).send(fileInfos);
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      message: "Unable to read list of files!",
+    });
+  }
+};
+
+const download = async (req, res, next) => {
+  try {
+    const folderName = "storyboardImage/";
+
+    const fileName = folderName + req.params.name;
+    const [metaData] = await bucket.file(fileName).getMetadata();
+    res.redirect(metaData.mediaLink);
+  } catch (err) {
+    res.status(500).send({
+      message: "Could not download the file. " + err,
+    });
+  }
+};
+
+const deleteFile = async (req, res, next) => {
+  try {
+    const fileName = req.params.fileName; // 삭제할 파일의 이름(경로 포함)
+    const file = bucket.file(fileName);
+
+    // 파일 삭제
+    await file.delete();
+
+    res.status(200).send({ message: `File ${fileName} deleted successfully` });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: `Unable to delete file: ${err.message}` });
+  }
+};
