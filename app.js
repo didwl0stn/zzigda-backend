@@ -14,6 +14,7 @@ const app = express();
 const mongoUser = process.env.MONGO_USER;
 const mongoPassword = process.env.MONGO_PASSWORD;
 const mongoDefaultDatabase = process.env.MONGO_DEFAULT_DATABASE;
+const mongoAddress = process.env.MONGO_ADDRESS;
 
 console.log(`MongoDB User: ${mongoUser}`);
 console.log(`MongoDB Password: ${mongoPassword}`);
@@ -58,7 +59,7 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(
     // messages데이터베이스에 연결 (.net/"db명")
-    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.3ordy97.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}?retryWrites=true&w=majority`
+    `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_ADDRESS}/${process.env.MONGO_DEFAULT_DATABASE}?retryWrites=true&w=majority`
   )
   .then((result) => {
     app.listen(process.env.PORT || 8080, () => {
